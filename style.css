@@ -41,3 +41,26 @@ div#fixedfooter {
 	background:#3B5998;
 	padding:4px;
 }
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 4px;
+}
+.averageLine{
+  fill: none;
+  stroke: red;
+  stroke-width: 4px;
+}
+
+div.tooltip {	
+    position: absolute;			
+    text-align: center;				
+    padding: 2px;				
+    font: 14px sans-serif;		
+    background: wheat;	
+    border: 0px;		
+    border-radius: 2px;			
+    pointer-events: none;			
+}
+
