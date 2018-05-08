@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <script src="https://d3js.org/d3.v4.min.js" charset="utf-8"></script>
+   <link rel="stylesheet" href="view.css">
+</head>
+<body>
+	<a href="index.html">
+	<div id="fixedheader">Causes of Death</div>
+	</a>
+	<div id="fixedfilter">
+		<table>
+			<tr>
+				<th>State:</th>
+				<th>
+					<select id="state" onchange="update()">
+						<option>--</option>
+						<option>Alabama</option>
+						<option>Alaska</option>
+						<option>Arizona</option>
+						<option>Arkansas</option>
+						<option>California</option>
+						<option>Colorado</option>
+						<option>Connecticut</option>
+						<option>Delaware</option>
+						<option>Florida</option>
+						<option>Georgia</option>
+						<option>Hawaii</option>
+						<option>Idaho</option>
+						<option>Illinois</option>
+						<option>Indiana</option>
+						<option>Iowa</option>
+						<option>Kansas</option>
+						<option>Kentucky</option>
+						<option>Louisiana</option>
+						<option>Maine</option>
+						<option>Maryland</option>
+						<option>Massachusetts</option>
+						<option>Michigan</option>
+						<option>Minnesota</option>
+						<option>Mississippi</option>
+						<option>Missouri</option>
+						<option>Montana</option>
+						<option>Nebraska</option>
+						<option>Nevada</option>
+						<option>New Hamsphire</option>
+						<option>New Jersey</option>
+						<option>New Mexico</option>
+						<option>New York</option>
+						<option>North Carolina</option>
+						<option>North Dakota</option>
+						<option>Ohio</option>
+						<option>Oklahoma</option>
+						<option>Oregon</option>
+						<option>Pennsylvania</option>
+						<option>Rhode Island</option>
+						<option>South Carolina</option>
+						<option>South Dakota</option>
+						<option>Tennessee</option>
+						<option>Texas</option>
+						<option>Utah</option>
+						<option>Vermont</option>
+						<option>Virginia</option>
+						<option>Washington</option>
+						<option>West Virginia</option>
+						<option>Wisconsin</option>
+						<option>Wyoming</option>
+					</select>
+				</th>
+				<th>Cause:</th>
+				<td>
+					<select id="cause" onchange="update()">
+						<option>--</option>
+						<option>All Causes</option>
+						<option>Unintentional Injuries</option>
+						<option>Alzheimer's disease</option>
+						<option>Homicide</option>
+						<option>Stroke</option>
+						<option>Chronic liver disease and cirrhosis</option>
+						<option>CLRD</option>
+						<option>Diabetes</option>
+						<option>Diseases of Heart</option>
+						<option>Essential hypertension and hypertensive renal disease</option>
+						<option>Influenza and pneumonia</option>
+						<option>Suicide</option>
+						<option>Cancer</option>
+						<option>Kidney Disease</option>
+						<option>Parkinson's disease</option>
+						<option>Pneumonitis due to solids and liquids</option>
+						<option>Septicemia</option>
+					</select>
+				</td>
+			</tr>
+		</table>
+	</div>
+	<div id="fixedfooter">CAS-320343 Visualization, Spring 2018. Prof. Michael Sedlmair<br>Done by: Temirlan Ulugbek uulu (t.ulugbekuulu@jacob-university.de), Zhao Liu (zh.liu@jacobs-university.de)</div>
+	<div id="barcharts">
+		<svg id="svgbarcharts" height = 1000 width=400>
+		</svg>
+	</div>
+	<div id="contentbox">
+		<svg id="svgcontent" height = 1000 width = 1300>
+			<g class = "linechart"></g>
+		</svg>
+	</div>
+	<script type="text/javascript" src="vis.js"></script>
+
+</body>
+</html>

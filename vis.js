@@ -2,7 +2,7 @@ var data = null;
 
 var dataFileName = "NCHS_-_Leading_Causes_of_Death__United_States.csv";
 var inputCause = "All Causes";
-var inputState = null;
+var inputState = "United States";
 
 
 
@@ -17,35 +17,37 @@ d3.csv(dataFileName, function(error, theData){
 function update(){
 	var selCause = document.getElementById('cause');
 	var causeSelected = selCause.options[selCause.selectedIndex].value;
-	if(causeSelected != "--"){
+	if(causeSelected == "--"){
+		inputCause = "All Causes";
+	} else {
 		inputCause = causeSelected;
 	}
 	var selState = document.getElementById('state');
 	var stateSelected = selState.options[selState.selectedIndex].value;
-	if(stateSelected != "--"){
+	if(stateSelected == "--"){
+		inputState = "United States";
+	} else {
 		inputState = stateSelected;
 	}
+	setByFilter = true;
 	linechart(inputCause, inputState);
-	if(inputState){
-		barchartcause(inputState);
-    } else {
-    	barchartstate(inputCause);
-    }
+	barchartcause(inputState);
+    barchartstate(inputCause);
 }
 
 function barchartstate(cause){
-	var margin = {top: 5, right: 5, bottom: 25, left: 20};
-	var width = 300 - margin.left - margin.right, 
-	height = 300 - margin.top - margin.bottom;
+	var margin = {top: 15, right: 5, bottom: 25, left: 60};
+	var width = 280, 
+	height = 180;
 
 	var div = d3.select("body").append("div")
 		.attr("class", "tooltip")
 		.style("opacity", 0);
 
-	d3.select(".barchart").remove();
-	var chart = d3.select("svg").append("g").attr("class", "barchart")
-		.attr("width", width + margin.right + margin.left)
-		.attr("height", height + margin.top + margin.bottom)
+	d3.select(".barchartstates").remove();
+	var chart = d3.select("#svgbarcharts").append("g").attr("class", "barchartstates")
+		.attr("width", width)
+		.attr("height", height)
 		.attr("transform", "translate(" + margin.left+","+margin.top+")");
 
 	var neededData = data.map(function (d) {
@@ -60,18 +62,15 @@ function barchartstate(cause){
 
 
 	var deathsCountMap = new Object();
-	var codeToDescription = new Object();
 	var maxCount = 0;
 	for (var i = 0; i < neededData.length; i++){
 		var item = neededData[i];
-		if (item.cause == cause){
-            codeToDescription[item.state] = item.cause;
+		if (item.cause == cause && item.state != "United States"){
             if (deathsCountMap[item.state]){
 				deathsCountMap[item.state] += item.deaths;
 			} else {
 				deathsCountMap[item.state] = item.deaths;
 			}
-			deathsCountMap[item.state] += item.deaths;
             maxCount = maxCount < deathsCountMap[item.state] ? deathsCountMap[item.state] : maxCount;
         }
 	}
@@ -90,22 +89,26 @@ function barchartstate(cause){
 		typesOfCrimes.push(arrayData[i].state);
 	}
 
-	var y = d3.scaleLinear().range([height-margin.top, margin.bottom]).domain([0, maxCount]);
-	var x = d3.scaleBand().domain(typesOfCrimes).range([margin.left, width+margin.left]);
+	var y = d3.scaleLinear().range([height, 0]).domain([0, maxCount]);
+	var x = d3.scaleBand().domain(typesOfCrimes).range([0, width]);
 
 
 	var barChartWidth = width/arrayData.length - 3;
 	chart.append("text")
-      .attr("x", (width / 2))             
-      .attr("y", margin.top)
+      .attr("x", (width / 2))
       .attr("text-anchor", "middle")  
-      .style("font-size", "10px") 
-      .text("# of deaths due to " + cause);
+      .style("font-size", "12px") 
+      .text("# of deaths across states due to " + cause);
 
 	
 	chart.append("g")
-		.attr("transform", "translate(0,"+height+")")
-		.call(d3.axisBottom(x));
+		.attr("transform", "translate(0,"+ (height)+")")
+		.call(d3.axisBottom(x))
+        .selectAll("text")  
+            .style("text-anchor", "end")
+            .attr("dx", "-.8em")
+            .attr("dy", ".15em")
+            .attr("transform", "rotate(-25)" );
 
 	chart.append("g")
 		.call(d3.axisLeft(y));
@@ -115,7 +118,7 @@ function barchartstate(cause){
 
 	bar.append("rect")
 		.attr("class", "barHisto")
-		.attr("fill", "blue")
+		.attr("fill", "#9932CC")
 		.attr("y", function(d) {return y(d.count);})
 		.attr("height", function(d) {return height - y(d.count);})
 		.attr("width", barChartWidth)
@@ -129,28 +132,35 @@ function barchartstate(cause){
 	            .style("top", (d3.event.pageY - 30) + "px");	
 	        })					
 	    .on("mouseout", function(d) {
-			d3.select(this).attr("fill", "blue");		
+			d3.select(this).attr("fill", "#9932CC");		
 	        div.transition()		
 	            .duration(500)		
 	            .style("opacity", 0);	
-         });
+         })
+	    .on("click", function(d){
+	    	inputState = d.state;
+	        div.transition()		
+	            .duration(500)		
+	            .style("opacity", 0);
+	        d3.select('#state').property('value', inputState);
+	    	update();
+	    });
 }
 
 
 function barchartcause(state){
-	var margin = {top: 5, right: 5, bottom: 25, left: 20};
-	var width = 300 - margin.left - margin.right, 
-	height = 300 - margin.top - margin.bottom;
+	var margin = {top: 255, right: 5, bottom: 25, left: 60};
+	var width = 280, 
+	height = 180;
 
 	var div = d3.select("body").append("div")
 		.attr("class", "tooltip")
 		.style("opacity", 0);
 
-	d3.select(".barchart").remove();
-	var chart = d3.select("svg").append("g").attr("class", "barchart")
-		.attr("width", width + margin.right + margin.left)
-		.attr("height", height + margin.top + margin.bottom)
-		.attr("class", "barchart")
+	d3.select(".barchartcauses").remove();
+	var chart = d3.select("#svgbarcharts").append("g").attr("class", "barchartcauses")
+		.attr("width", width)
+		.attr("height", height)
 		.attr("transform", "translate(" + margin.left+","+margin.top+")");
 
 	var neededData = data.map(function (d) {
@@ -165,18 +175,15 @@ function barchartcause(state){
 
 
 	var deathsCountMap = new Object();
-	var codeToDescription = new Object();
 	var maxCount = 0;
 	for (var i = 0; i < neededData.length; i++){
 		var item = neededData[i];
-		if (item.state == state){
-            codeToDescription[item.state] = item.cause;
+		if (item.state == state && item.cause != "All Causes"){
             if (deathsCountMap[item.cause]){
 				deathsCountMap[item.cause] += item.deaths;
 			} else {
 				deathsCountMap[item.cause] = item.deaths;
 			}
-			deathsCountMap[item.cause] += item.deaths;
             maxCount = maxCount < deathsCountMap[item.cause] ? deathsCountMap[item.cause] : maxCount;
         }
 	}
@@ -194,24 +201,26 @@ function barchartcause(state){
 	for(var i = 0; i < arrayData.length; i++){
 		typesOfCrimes.push(arrayData[i].cause);
 	}
-
-
-	var y = d3.scaleLinear().range([height-margin.top, margin.bottom]).domain([0, maxCount]);
-	var x = d3.scaleBand().domain(typesOfCrimes).range([margin.left, width+margin.left]);
+	var y = d3.scaleLinear().range([height, 0]).domain([0, maxCount]);
+	var x = d3.scaleBand().domain(typesOfCrimes).range([0, width]);
 
 	var barChartWidth = width/arrayData.length - 3;
 	
 	chart.append("text")
-      .attr("x", (width / 2))             
-      .attr("y", margin.top)
+      .attr("x", (width / 2))
       .attr("text-anchor", "middle")  
-      .style("font-size", "10px") 
-      .text("# of deaths 1999-2015");
+      .style("font-size", "15px") 
+      .text("Death causes in " + state);
 
 
 	chart.append("g")
-		.attr("transform", "translate(0,"+height+")")
-		.call(d3.axisBottom(x));
+		.attr("transform", "translate(0,"+(height)+")")
+		.call(d3.axisBottom(x))
+        .selectAll("text")  
+            .style("text-anchor", "end")
+            .attr("dx", "-.8em")
+            .attr("dy", ".15em")
+            .attr("transform", "rotate(-25)" );
 
 	chart.append("g")
 		.call(d3.axisLeft(y));
@@ -221,9 +230,9 @@ function barchartcause(state){
 
 	bar.append("rect")
 		.attr("class", "barHisto")
-		.attr("fill", "blue")
+		.attr("fill", "#D2691E")
 		.attr("y", function(d) {return y(d.count);})
-		.attr("height", function(d) {return height - y(d.count);})
+		.attr("height", function(d) { return height - y(d.count);})
 		.attr("width", barChartWidth)
 		.on("mouseover", function(d) {
 			d3.select(this).attr("fill", "red");		
@@ -235,25 +244,33 @@ function barchartcause(state){
 	            .style("top", (d3.event.pageY - 30) + "px");	
 	        })					
 	    .on("mouseout", function(d) {
-			d3.select(this).attr("fill", "blue");		
+			d3.select(this).attr("fill", "#D2691E");		
 	        div.transition()		
 	            .duration(500)		
 	            .style("opacity", 0);	
-         });
+         })
+	    .on("click", function(d){
+	    	inputCause = d.cause;
+	        div.transition()		
+	            .duration(500)		
+	            .style("opacity", 0);
+	        d3.select('#cause').property('value', inputCause);
+	    	update();
+	    });
 }
 
 
 function linechart(causeOfDeath, state){
-	var margin = {top: 50, right: 5, bottom: 50, left: 600};
-	var width = 900 - margin.left - margin.right, 
-	height = 500 - margin.top - margin.bottom;
+	var margin = {top: 50, right: 5, bottom: 50, left: 500};
+	var width = 400, 
+	height = 400;
 
 	var div = d3.select("body").append("div")
 		.attr("class", "tooltip")
 		.style("opacity", 0);
 
 	d3.select(".linechart").remove();
-	var chart = d3.select("svg").append("g").attr("class", "linechart")
+	var chart = d3.select("#svgcontent").append("g").attr("class", "linechart")
 		.attr("width", width + margin.right + margin.left)
 		.attr("height", height + margin.top + margin.bottom)
 		.attr("transform", "translate(" + margin.left+","+margin.top+")");

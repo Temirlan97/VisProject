@@ -1,0 +1,63 @@
+div#fixedheader {
+	position:absolute;
+	top:0px;
+	left:0px;
+	width:100%;
+	color:#CCC;
+	background:#3B5998;
+	padding:8px;
+	text-align: center;
+	font-size: 25px;
+	height: 30px;
+}
+div#fixedfooter {
+	position:absolute;
+	bottom:0px;
+	left:0px;
+	height: 32px;
+	width:100%;
+	color:#CCC;
+	background:#3B5998;
+	padding:4px;
+}
+body{
+   	background-color: #ADD8E6;
+}
+/*
+This outer middle inner part was taken 
+from https://stackoverflow.com/questions/396145/how-to-vertically-center-a-div-for-all-browsers
+*/
+.outer {
+  display: table;
+  position: absolute;
+  height: 100%;
+  width: 100%;
+}
+
+.middle {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.inner {
+  margin-left: auto;
+  margin-right: auto;
+  width: 400px;
+}
+/*
+Button part is taken from
+https://stackoverflow.com/questions/4840736/easier-way-to-create-circle-div-than-using-an-image
+*/
+.buttonBase {
+    border-radius: 50%;
+}
+
+.button {
+	text-align: center;
+    width: 100px;
+    height: 100px;
+	color:#CCC;
+    background: #3B5998;
+	font-size: 20px;
+    border: 3px solid red;
+}
