@@ -11,8 +11,8 @@
 	<div id="fixedfilter">
 		<table>
 			<tr>
-				<th>State:</th>
-				<th>
+				<td>
+				State:
 					<select id="state" onchange="update()">
 						<option>--</option>
 						<option>Alabama</option>
@@ -66,9 +66,7 @@
 						<option>Wisconsin</option>
 						<option>Wyoming</option>
 					</select>
-				</th>
-				<th>Cause:</th>
-				<td>
+				Cause:
 					<select id="cause" onchange="update()">
 						<option>--</option>
 						<option>All Causes</option>
@@ -89,6 +87,11 @@
 						<option>Pneumonitis due to solids and liquids</option>
 						<option>Septicemia</option>
 					</select>
+				</td>
+				<td>
+					<div>
+						<svg id="svgyear" width = 700></svg>
+					</div>
 				</td>
 			</tr>
 		</table>

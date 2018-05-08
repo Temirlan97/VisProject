@@ -14,13 +14,19 @@ div#fixedfilter{
 	position: absolute;
 	top: 46px;
 	left: 0px;
-	width: 100%;
 	background: #ADD8E6;
 	padding: 3px;
-	text-align: center;
+	width: 100%;
+	text-align: left;
 	height: 25px;
 	border-bottom: 2px solid #3B5998;
 }
+
+svg#svgyear{
+	position:absolute;
+	top:0px;
+}
+
 div#barcharts{
 	position: absolute;
 	width:27%;
@@ -52,6 +58,7 @@ div#fixedfooter {
 	background:#3B5998;
 	padding:4px;
 }
+
 
 .line {
   fill: none;

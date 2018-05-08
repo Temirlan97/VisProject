@@ -3,6 +3,7 @@ var data = null;
 var dataFileName = "NCHS_-_Leading_Causes_of_Death__United_States.csv";
 var inputCause = "All Causes";
 var inputState = "United States";
+var yearStart = 1999, yearEnd = 2015;
 
 
 
@@ -33,6 +34,97 @@ function update(){
 	linechart(inputCause, inputState);
 	barchartcause(inputState);
     barchartstate(inputCause);
+    yearFilter();
+}
+
+function yearFilter(){
+	var minYear = 1999, maxYear = 2015;
+	var margin = {top: 5, right: 3, bottom: 3, left: 30};
+	var width = 650, 
+	height = 25;
+
+	d3.select(".yearfilter").remove();
+	var chart = d3.select("#svgyear").append("g")
+		.attr("class", "yearfilter")
+		.attr("width", width)
+		.attr("height", height)
+		.attr("transform", "translate(" + margin.left+","+margin.top+")");
+
+	var allYears = new Array();
+	for(var i = minYear; i <= maxYear; i++){
+		allYears.push(i);
+	}
+
+	var x = d3.scaleLinear().range([0, width]).domain([minYear, maxYear]);
+
+	var radius = 8;
+	chart.selectAll(".dots").data(allYears).enter()
+		.append("circle")
+		.attr("class", "dots")
+		.attr("r", radius)
+		.attr("cx", function(d){return x(d);})
+		.attr("cy", 5)
+		.style("fill", function(d){
+			if(d >= yearStart && d <= yearEnd){
+				return "red";
+			}
+			else{
+				return "grey";
+			}
+		})
+		.on("mouseover", function(d) {
+			if(d != yearStart && d != yearEnd){
+				d3.select(this).style("fill", "#90EE90");
+			}
+		})					
+	    .on("mouseout", function(d) {
+			if(d >= yearStart && d <= yearEnd){
+				d3.select(this).style("fill", "red");
+			}
+			else{
+				d3.select(this).style("fill", "grey");
+			}	
+         })
+		.on("click", function(d){
+	    	if (d3.event.ctrlKey) {
+	    		if(d > yearStart && d != yearEnd){
+		    		yearEnd = d;
+			    	update();
+		    	}
+	    	} else {
+		    	if(d < yearEnd && d != yearStart){
+		    		yearStart = d;
+			    	update();
+		    	}
+	    	}
+	    });
+
+
+	yearsForBars = allYears.slice(0, allYears.length - 1)
+	chart.selectAll(".yearbars").data(yearsForBars).enter()
+		.append("rect")
+		.attr("class", "yearbars")
+		.attr("x", function(d){return x(d) + radius/2;})
+		.attr("y", radius/2)
+		.attr("width", width/allYears.length - radius/2)
+		.attr("height", radius/4)
+		.attr("fill", function(d){
+			if(d >= yearStart && d < yearEnd){
+				return "red";
+			}
+			else{
+				return "grey";
+			}
+		});
+
+	chart.selectAll("text").data(allYears).enter()
+		.append("text")
+		.attr("x", function(d){return x(d);})
+		.attr("y", 23)
+		.attr("text-anchor", "middle")  
+		.style("font-size", "12px") 
+		.text(function(d){return d;});
+
 }
 
 function barchartstate(cause){
@@ -65,7 +157,7 @@ function barchartstate(cause){
 	var maxCount = 0;
 	for (var i = 0; i < neededData.length; i++){
 		var item = neededData[i];
-		if (item.cause == cause && item.state != "United States"){
+		if (item.cause == cause && item.state != "United States"  && item.year >= yearStart && item.year <= yearEnd){
             if (deathsCountMap[item.state]){
 				deathsCountMap[item.state] += item.deaths;
 			} else {
@@ -178,7 +270,7 @@ function barchartcause(state){
 	var maxCount = 0;
 	for (var i = 0; i < neededData.length; i++){
 		var item = neededData[i];
-		if (item.state == state && item.cause != "All Causes"){
+		if (item.state == state && item.cause != "All Causes" && item.year >= yearStart && item.year <= yearEnd){
             if (deathsCountMap[item.cause]){
 				deathsCountMap[item.cause] += item.deaths;
 			} else {
@@ -289,15 +381,16 @@ function linechart(causeOfDeath, state){
 	var minYear = 3000;
 	var maxYear = 0;
 	for(var i = 0; i < mappedData.length; i++){
-		if(mappedData[i].cause == causeOfDeath){
-			minYear = minYear < mappedData[i].year ? minYear : mappedData[i].year;
-			maxYear = maxYear > mappedData[i].year ? maxYear : mappedData[i].year; 
-			if(!averageDataAsMap[mappedData[i].year]){
-				averageDataAsMap[mappedData[i].year] = 0;
+		item = mappedData[i];
+		if(item.cause == causeOfDeath && item.year >= yearStart && item.year <= yearEnd){
+			minYear = minYear < item.year ? minYear : item.year;
+			maxYear = maxYear > item.year ? maxYear : item.year; 
+			if(!averageDataAsMap[item.year]){
+				averageDataAsMap[item.year] = 0;
 			}
-			averageDataAsMap[mappedData[i].year] += mappedData[i].ageAdjRate/50;			
-			if(mappedData[i].state == state){
-				neededData.push(mappedData[i]);	
+			averageDataAsMap[item.year] += item.ageAdjRate/50;			
+			if(state != "United States" && item.state == state){
+				neededData.push(item);	
 			}
 		}
 	}
