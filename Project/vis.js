@@ -1,5 +1,5 @@
 var data = null;
-
+var stateData = null;
 var dataFileName = "NCHS_-_Leading_Causes_of_Death__United_States.csv";
 var inputCause = "All Causes";
 var inputState = "United States";
@@ -12,6 +12,12 @@ d3.csv(dataFileName, function(error, theData){
 		return console.warn(error);
 	}
 	data = theData;
+	update();
+});
+
+d3.json("us-10m.v1.json", function(error, us) {
+  	if (error) throw error;
+	stateData = us;
 	update();
 });
 
@@ -35,6 +41,7 @@ function update(){
 	barchartcause(inputState);
     barchartstate(inputCause);
     yearFilter();
+    heatmap();
 }
 
 function yearFilter(){
@@ -128,9 +135,10 @@ function yearFilter(){
 }
 
 function barchartstate(cause){
+	if(!data) return;
 	var margin = {top: 15, right: 5, bottom: 25, left: 60};
 	var width = 280, 
-	height = 180;
+	height = 150;
 
 	var div = d3.select("body").append("div")
 		.attr("class", "tooltip")
@@ -241,7 +249,8 @@ function barchartstate(cause){
 
 
 function barchartcause(state){
-	var margin = {top: 255, right: 5, bottom: 25, left: 60};
+	if(!data) return;
+	var margin = {top: 225, right: 5, bottom: 25, left: 60};
 	var width = 280, 
 	height = 180;
 
@@ -353,9 +362,10 @@ function barchartcause(state){
 
 
 function linechart(causeOfDeath, state){
+	if(!data) return;
 	var margin = {top: 50, right: 5, bottom: 50, left: 500};
 	var width = 400, 
-	height = 400;
+	height = 350;
 
 	var div = d3.select("body").append("div")
 		.attr("class", "tooltip")
@@ -456,10 +466,121 @@ function linechart(causeOfDeath, state){
 
 	chart.append("g")
 		.attr("transform", "translate(0,"+height+")")
-		.call(d3.axisBottom(xScale));
+		.call(d3.axisBottom(xScale))
+        .selectAll("text")  
+            .style("text-anchor", "end")
+            .attr("dx", "-.8em")
+            .attr("dy", ".15em")
+            .attr("transform", "rotate(-25)" );
 
 
 	chart.append("g")
 		.call(d3.axisLeft(yScale));
+}
 
+/*
+The visulisation part of this Heatmap was mostly learned from 
+http://duspviz.mit.edu/d3-workshop/mapping-data-with-d3/
+*/
+
+function heatmap(){
+	if(!stateData) return;
+
+	var margin = {top: 50, right: 5, bottom: 50, left: 30};
+	var width = 400, 
+	height = 400;
+
+	var mappedData = data.map(function (d) {
+		return {
+			year: +d["Year"],
+			cause: d["Cause Name"],
+			state: d["State"],
+			ageAdjRate: +d["Age-adjusted Death Rate"]
+	    };
+	});
+	var stateMap = new Object();
+	var minRate = 10000000, maxRate = -1;
+	for (var i = 0; i < mappedData.length; i++){
+		var item = mappedData[i];
+		if(inputCause == item.cause && item.year >= yearStart && item.year <= yearEnd){
+			if(!stateMap[item.state]){
+				stateMap[item.state] = 0;
+			}
+			stateMap[item.state] += item.ageAdjRate/(1 + yearEnd - yearStart);
+			minRate = minRate > stateMap[item.state] ? stateMap[item.state] : minRate;
+			maxRate = maxRate < stateMap[item.state] ? stateMap[item.state] : maxRate;
+		}
+	}
+
+	var states = {"10":"Delaware","11":"District of Columbia","12":"Florida","13":"Georgia","15":"Hawaii","16":"Idaho","17":"Illinois","18":"Indiana","19":"Iowa","20":"Kansas","21":"Kentucky","22":"Louisiana","23":"Maine","24":"Maryland","25":"Massachusetts","26":"Michigan","27":"Minnesota","28":"Mississippi","29":"Missouri","30":"Montana","31":"Nebraska","32":"Nevada","33":"New Hampshire","34":"New Jersey","35":"New Mexico","36":"New York","37":"North Carolina","38":"North Dakota","39":"Ohio","40":"Oklahoma","41":"Oregon","42":"Pennsylvania","44":"Rhode Island","45":"South Carolina","46":"South Dakota","47":"Tennessee","48":"Texas","49":"Utah","50":"Vermont","51":"Virginia","53":"Washington","54":"West Virginia","55":"Wisconsin","56":"Wyoming","60":"American Samoa","64":"Micronesia","66":"Guam","67":"Johnston Atoll","68":"Marshall Islands","69":"Northern Mariana Islands","70":"Palau","71":"Midway Islands","72":"Puerto Rico","74":"U.S. Minor Outlying Islands","76":"Navassa Island","78":"U.S. Virgin Islands","79":"Wake Island","81":"Baker Island","84":"Howland Island","86":"Jarvis Island","89":"Kingman Reef","95":"Palmyra Atoll[4]","01":"Alabama","02":"Alaska","04":"Arizona","05":"Arkansas","06":"California","08":"Colorado","09":"Connecticut"}
+	
+	var div = d3.select("body").append("div")
+		.attr("class", "tooltip")
+		.style("opacity", 0);
+
+	d3.select(".heatmap").remove();
+	var chart = d3.select("#svgcontent").append("g").attr("class", "heatmap")
+		.attr("width", width + margin.right + margin.left)
+		.attr("height", height + margin.top + margin.bottom)
+		.attr("transform", "translate(" + margin.left+","+margin.top+")");
+
+	var path = d3.geoPath();
+	console.log(minRate);
+	console.log(maxRate);
+    var colorScale = d3.scaleLinear()
+         .domain([minRate, maxRate])
+         .range(["white", "green"]);
+	chart.append("g")
+		.attr("class", "states")
+		.selectAll("path")
+		.data(topojson.feature(stateData, stateData.objects.states).features)
+		.enter()
+		.append("path")
+		.attr("d", path)
+		.style("fill", function(d){
+			var stateName = states[d.id];
+			if(inputState == "United States"){
+				return colorScale(stateMap[stateName]);
+			} else if (inputState == stateName){
+				return "green";
+			}
+			return "#ADD8E6";
+		})
+		.on("mouseover", function(d){
+			var stateName = states[d.id];
+			d3.select(this).style("fill", "red");
+			div.transition()		
+		            .duration(200)		
+		            .style("opacity", 0.9);	
+	        div.html(stateName)
+	            .style("left", (d3.event.pageX) + "px")		
+	            .style("top", (d3.event.pageY - 30) + "px");	
+		})
+		.on("mouseout", function(d){
+			var stateName = states[d.id];
+			var color = "";
+			if(inputState == "United States"){
+				color = colorScale(stateMap[stateName]);
+			} else if (inputState == stateName){
+				color = "green";
+			} else {
+				color = "#ADD8E6";
+			}		
+	        div.transition()		
+	            .duration(500)		
+	            .style("opacity", 0);
+			d3.select(this).style("fill", color);	
+		})
+		.on("click", function(d){
+			var stateName = states[d.id];
+	        d3.select('#state').property('value', stateName);		
+	        div.transition()		
+	            .duration(500)		
+	            .style("opacity", 0);
+			update();
+		})
+		.transition().duration(2000)
+		.attrTween("transform", function(d, i, a) {
+    		return d3.interpolateString(a, 'scale(0.45)');
+		});
 }
