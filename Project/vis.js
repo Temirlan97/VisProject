@@ -464,6 +464,11 @@ function linechart(causeOfDeath, state){
 	            .style("opacity", 0);	
          });
 
+	chart.append("text")
+	      .attr("x", (width / 2))
+	      .attr("text-anchor", "middle")  
+	      .style("font-size", "15px") 
+	      .text("Age-adjusted death rate");
 	chart.append("g")
 		.attr("transform", "translate(0,"+height+")")
 		.call(d3.axisBottom(xScale))
@@ -524,6 +529,12 @@ function heatmap(){
 		.attr("height", height + margin.top + margin.bottom)
 		.attr("transform", "translate(" + margin.left+","+margin.top+")");
 
+
+	chart.append("text")
+	      .attr("x", (width / 2))
+	      .attr("text-anchor", "middle")  
+	      .style("font-size", "20px") 
+	      .text(inputState);
 	var path = d3.geoPath();
 	console.log(minRate);
 	console.log(maxRate);
